@@ -1,11 +1,6 @@
 # Urban Greenery and Demographics in Worcester, MA
 
-### IDCE 376, Spatial Database Management, Spring 2024
-#### Jason Andrews, Clark University MSGIS, 2024
-
-This repository contains submissions pertaining to final project work for IDCE 376.
-
-The assignment description can be viewed in the *Final_Project-Rubric.pdf* document.
+This work was initially completed as classwork for IDCE-376, Spatial Database Management, but is being expanded upon for HERO research and analysis. 
 
 # Introduction
 
