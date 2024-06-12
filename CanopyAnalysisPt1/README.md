@@ -39,11 +39,11 @@ See **CDC_LE_Processing.ipynb**
 
 <img width="988" alt="Screenshot 2024-04-23 at 5 24 03 PM" src="https://github.com/andrews-j/IDCE-376_FinalProject/assets/26927475/518b066e-ffc0-4c58-8fdc-acd15e518d1d">
 
-**American Community Survey-- Percent of Population with Income below Federal Poverty Line**
-
 Both ASC layers were manually cleaned in QGIS, with further cleaning in python. The most tedious part of this entire process was merging census areas that were split betwen the 2010 and 2020 census.
 
 See **ACS_2020_Merge.ipynb**
+
+**American Community Survey-- Percent of Population with Income below Federal Poverty Line**
 
 <img width="907" alt="Screenshot 2024-04-23 at 5 28 13 PM" src="https://github.com/andrews-j/IDCE-376_FinalProject/assets/26927475/fec9c855-032f-4ec7-b7f4-874d48ad379d">
 
@@ -141,7 +141,7 @@ The result, at this point, is that we have quite a lot of tables, 41 to be exact
 
 <img width="354" alt="Screenshot 2024-04-23 at 6 09 33 PM" src="https://github.com/andrews-j/IDCE-376_FinalProject/assets/26927475/5f62c549-f437-4ccc-99a9-492039556156">
 
-## Part 3: Create Composite HDI
+## Part 3: Create Composite HDI for 2020
 
 Now we are going to use the life expectancy estimate, percent of population in poverty, and percent of population with a bachelor's degree to create an HDI measure for each tract. To do this we will normalize each measure to an index between 0 and 1, which will then be used to weight each evenly in our final composite index.
 
@@ -351,7 +351,7 @@ How do we measure well-being, socio-economic or otherwise, by census tract? What
 - 25 percent or more of households identify as speaking English less than "very well"
 - Minorities make up 25 percent or more of the population and the annual median household income of the municipality in which the neighborhood is located does not exceed 150 percent of the statewide annual median household income.
 
-I am curious to what extent this lense on well being would correlate with the HDI measure that I calculated here. There is also the CDC's social vulerability index, which includes as many as 15 different metrics. It is a complex sociological question to consider which of these is the most 'valid' measure of community level well being, or even more generally what metrics we care about most and how we measure them. I want to keep thinking about this. 
+I am curious to what extent this measure of well being would correlate with the HDI measure that I calculated here. There is also the CDC's social vulerability index, which includes as many as 15 different metrics. It is a complex sociological question to consider which of these is the most 'valid' or salient measure of community level well being, or even more generally what metrics we care about most and how we measure them. I want to keep thinking about this. 
 
 ### Increase statistical robustness
 
