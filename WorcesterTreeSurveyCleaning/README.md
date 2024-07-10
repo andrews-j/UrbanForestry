@@ -1,4 +1,4 @@
-## Merging Longhorned Beetle Surveys
+## Merging Summer '23 and Fall '23 HERO Surveys
 
 In the summer of 2023 HERO fellows collected data on trees planted by the MA DCR in four neighborhoods of Worcester, Massachusetts in the aftermath of the Longhorned Beetle removals.
 This data came to reside in "LBSurvey23FINAL.csv". I perfomed preliminary cleaning on dataset this resulting in "S23_work.csv"
