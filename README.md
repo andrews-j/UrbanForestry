@@ -8,4 +8,4 @@ This repository contains projects related to urban forestry in Worcester, MA, th
 
 2. [Create2021CanopyModel](https://github.com/andrews-j/UrbanForestry/tree/main/Create2021CanopyModel): Walks through the process of using Lidar and high resolution imagery to create a canopy model for the city of Worcester
 
-3. [CanopyAnalysisPt1](https://github.com/andrews-j/UrbanForestry/tree/main/CanopyAnalysisPt1): This is an analysis correlating canopy cover to socioeconomics in Worcester, specifically HDI. 
+3. [CanopyAnalysisPt1](https://github.com/andrews-j/UrbanForestry/tree/main/CanopyAnalysisPt1): This is an analysis examining the relationship between canopy cover and socioeconomics, specifically HDI, in Worcester. 
