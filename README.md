@@ -1,6 +1,6 @@
 # Worcester Urban Forestry
 
-This repository contains projects related to urban forestry in Worcester, MA, through my work as a graduate student researcher and research coordinator for the Human Environment Regional Observatory [(HERO)](https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.clarku.edu/departments/hero-program/&ved=2ahUKEwj_qM7pvPmFAxWZGFkFHWhUDKYQFnoECAYQAQ&usg=AOvVaw3mYU6Mv2dqgiaPjgm3sk5f) program at Clark University.
+This repository contains projects related to urban forestry in Worcester, MA, through my work as a graduate student researcher and research supervisor for the Human Environment Regional Observatory [(HERO)](https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.clarku.edu/departments/hero-program/&ved=2ahUKEwj_qM7pvPmFAxWZGFkFHWhUDKYQFnoECAYQAQ&usg=AOvVaw3mYU6Mv2dqgiaPjgm3sk5f) program at Clark University.
 
 ### Projects in this repository:
 
