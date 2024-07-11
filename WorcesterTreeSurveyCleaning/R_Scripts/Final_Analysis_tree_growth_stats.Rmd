@@ -1,0 +1,318 @@
+---
+title: "tree_growth_stats"
+output: html_document
+date: "2023-07-07"
+---
+This RMD requires that you have run the script Clean_data.R and have the alltreedata data object
+
+load required packages
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+
+Calculate average metrics by species
+```{r}
+# hopefully all of the trees will have a mortality and this will be unessicary
+library(dplyr)
+
+alltreedata <- read.csv("Y:\\Asian Longhorned Beetle\\HERO_2023\\Fall_DCR_Research\\Dataset_for_final_analysis_fall23.csv") %>% as_tibble
+
+# Filter to individual trees that were alive in 14-15 and 23 and with n >= 10
+alltreedata <- alltreedata %>% 
+  filter(Mortality == "Alive", Mortality_2023 == "Alive", DBH != 0, DBH_2023 != 0)
+
+# Filter to species with n greater than 10
+count <- alltreedata %>% count(SPECIES)
+alltreedata <- alltreedata %>% left_join(count, by = "SPECIES")
+alltreedata <- alltreedata %>% filter(n >= 10)
+
+# Setting dbh to zero so it'll work
+alltreedata$DBH2_2023[is.na(alltreedata$DBH2_2023)] <- 0
+alltreedata$DBH2[is.na(alltreedata$DBH2)] <- 0
+
+# Renaming columns, making sure they're all numeric, selecting only required columns
+# treestats <- alltreedata %>%  
+#   mutate(
+#     width_23 = as.numeric(Width_2023),
+#     width_1415 = as.numeric(Width),
+#     DBH1_23 = as.numeric(DBH_2023),
+#     DBH2_23 = as.numeric(DBH2_2023),
+#     DBH1_1415 = as.numeric(DBH),
+#     DBH2_1415 = as.numeric(DBH2),
+#     height_23 = as.numeric(Height_2023),
+#     height_1415 = as.numeric(Height))
+# 
+# treestats <- treestats %>%  
+#   filter(
+#     is.numeric(DBH1_23),
+#     is.numeric(DBH1_1415)
+#   )
+# 
+# treestats$DBH2_23[is.na(treestats$DBH2_23)] <- 0
+# treestats$DBH_23[is.na(treestats$DBH_23)] <- 0
+# 
+# treestats <- treestats %>%  
+#   rowwise() %>%
+#   mutate(
+#     DBH1_23 = ifelse(is.numeric(DBH_2023) && is.numeric(DBH2_2023) && DBH2_2023 == 0,
+#                     DBH_2023,
+#                     ifelse(is.numeric(DBH_2023) && is.numeric(DBH2_2023),
+#                            (DBH_2023 + DBH2_2023) / 2,
+#                            0)),
+#     DBH1_1415 = ifelse(is.numeric(DBH1_1415) && is.numeric(DBH2_1415) && DBH1_1415 == 0,
+#                       DBH1_1415,
+#                       ifelse(is.numeric(DBH1_1415) && is.numeric(DBH2_1415),
+#                              (DBH1_1415 + DBH2_1415) / 2,
+#                              0))
+#   )
+
+treestats <- alltreedata %>%  
+  mutate(
+    width_23 = as.numeric(Width_2023),
+    width_1415 = as.numeric(Width),
+    DBH1_23 = as.numeric(DBH_2023),
+    DBH2_23 = as.numeric(DBH2_2023),
+    DBH1_1415 = as.numeric(DBH),
+    DBH2_1415 = as.numeric(DBH2),
+    height_23 = as.numeric(Height_2023),
+    height_1415 = as.numeric(Height)
+  )
+
+treestats <- treestats %>%  
+  filter(
+    is.numeric(DBH1_23),
+    is.numeric(DBH1_1415)
+  )
+
+treestats$DBH2_23[is.na(treestats$DBH2_23)] <- 0
+treestats$DBH_23[is.na(treestats$DBH_23)] <- 0
+
+treestats <- treestats %>%  
+  mutate(
+    DBH1_23 = ifelse(DBH2_2023 == 0, DBH_2023, (DBH_2023 + DBH2_2023) / 2),
+    DBH1_1415 = ifelse(DBH1_1415 == 0, DBH1_1415, (DBH1_1415 + DBH2_1415) / 2)
+  )
+
+treestats <- treestats %>%
+  mutate(Dheight = height_23 - height_1415) %>%
+  mutate(Dwidth = width_23 - width_1415) %>%
+  mutate(Ddbh = DBH1_23 - DBH1_1415)
+
+### USE THIS FOR DBH
+filtered_treestats <- treestats %>% 
+  filter(DBH1_23 != 0, DBH1_1415 != 0)
+
+# Calculate the change in DBH
+filtered_treestats <- filtered_treestats %>%  
+  mutate(DBH_change = DBH1_23 - DBH1_1415) %>%
+  filter(DBH_change <= 20)  # Add filter for values less than or equal to 20
+
+# Create a box plot for the change in DBH
+ggplot(filtered_treestats) +
+  geom_boxplot(aes(x = reorder(SPECIES, -DBH_change), y = DBH_change)) +
+  theme_bw() +
+  xlab("Species") +
+  ylab("Change in DBH (in)") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+
+calculate difference, and look at top 5 
+```{r}
+# Create table containing the average difference in height from the 14-15 surveys and the 2023 survey. Only for trees where height was measured in both surveys
+
+
+Dheight <- treestats %>% 
+  filter(height_23 != 0, height_1415 != 0, Dheight > 0) %>%
+  group_by(SPECIES) %>% 
+  summarise_at(vars(height_23, height_1415), list(mean = mean), na.rm = T) %>%
+  mutate(change = height_23_mean - height_1415_mean) %>%
+  mutate(percentchange = round(change / height_1415_mean, digits = 3)) %>%
+  mutate(percent = paste0(percentchange * 100, "%")) %>%
+  relocate(percent, .after = height_23_mean)
+# select top 5 height growth species
+Dheight_top5 <- Dheight %>% 
+  arrange(desc(percentchange)) %>%
+  slice(1:5)
+Dheight_bottom5 <- Dheight %>% 
+  arrange(percentchange) %>%
+  slice(1:5)
+# this needs more data cleaning but this code will work on the cleaned data
+
+
+# create new table with difference in heights
+Dwidth <- treestats %>% 
+  filter(width_23 != 0, width_1415 != 0, Dwidth > 0) %>%
+  group_by(SPECIES) %>% 
+  summarise_at(vars(width_23, width_1415), list(mean = mean), na.rm = T) %>%
+  mutate(change = width_23_mean - width_1415_mean) %>%
+  mutate(percentchange = round(change / width_1415_mean, digits = 3)) %>%
+  mutate(percent = paste0(percentchange * 100, "%")) %>%
+  relocate(percent, .after = width_23_mean)
+# select top 5 height growth species
+Dwidth_top5 <- Dwidth %>% 
+  arrange(desc(percentchange)) %>%
+  slice(1:5)
+Dwidth_bottom5 <- Dwidth %>% 
+  arrange(percentchange) %>%
+  slice(1:5)
+# this needs more data cleaning but this code will work on the cleaned data
+
+
+# create new table with difference in heights
+Ddbh <- treestats %>% 
+  #filter(DBH1_23 != 0, DBH1_1415 != 0, Ddbh > 0) %>%
+  group_by(SPECIES) %>% 
+  summarise_at(vars(DBH1_23, DBH1_1415), list(mean = mean), na.rm = T) %>%
+  mutate(change = DBH1_23_mean - DBH1_1415_mean) %>%
+  mutate(percentchange = round(change / DBH1_1415_mean, digits = 3)) %>%
+  mutate(percent = paste0(percentchange * 100, "%")) %>%
+  relocate(percent, .after = DBH1_23_mean)
+
+###
+
+
+
+
+###
+# select top 5 height growth species
+Ddbh_top5 <- Ddbh %>% 
+  arrange(desc(percentchange)) %>%
+  slice(1:5)
+Ddbh_bottom5 <- Ddbh %>% 
+  arrange(percentchange) %>%
+  slice(1:5)
+# this needs more data cleaning but this code will work on the cleaned data
+
+Dlists <- list(topDheight = Dheight_top5, bottomDheight = Dheight_bottom5,
+               topDwidth = Dwidth_top5, bottomDwidth = Dwidth_bottom5,
+               topDdbh = Ddbh_top5, bottomDdbh = Ddbh_bottom5)
+Dlists
+
+
+```
+
+Box plots of change in height, width and dbh
+```{r}
+
+ggplot(treestats %>% filter(height_23 != 0) %>% filter(Dheight >= 0)) +
+  geom_boxplot(aes(x = reorder(SPECIES, -Dheight), y = Dheight)) +
+  theme_bw() +
+  xlab("Species") +
+  ylab("Change in Height (ft)") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+
+ggplot(treestats %>% filter(width_23 != 0) %>% filter(Dwidth >= 0)) +
+  geom_boxplot(aes(x = reorder(SPECIES, -Dwidth), y = Dwidth)) +
+  theme_bw() +
+  xlab("Species") +
+  ylab("Change in Width (ft)") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+ggplot(treestats %>% filter(DBH1_23 != 0) %>% filter(Ddbh >= 0)) +
+  geom_boxplot(aes(x = reorder(SPECIES, -Ddbh), y = Ddbh)) +
+  theme_bw() +
+  xlab("Species") +
+  ylab("Change in DBH (in)") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+    theme(plot.margin = margin(1, 1, 1, 1, "cm"))
+```
+
+
+
+
+ABSOLUTE height metrics
+```{r}
+alltreedata <- read.csv("Z:\\HERO_2023\\Statistics_analysis\\Data\\LBSurvey23FINAL.csv") %>% as_tibble %>% filter(Mortality1 == "Alive")
+count <- alltreedata %>% count(SPECIES)
+alltreedata <- alltreedata %>% left_join(count, by = join_by(SPECIES))
+alltreedata <- alltreedata %>% filter(n >= 10)
+
+treestats <- alltreedata %>%  
+  mutate(width_23 = Width_ft23 %>% as.numeric) %>% 
+  mutate(DBH1_23 = DBH_2023 %>% as.numeric) %>%
+  mutate(DBH2_23 = DBH2_2023 %>% as.numeric) %>%
+  mutate(DBH_23 = DBH1_23) %>%
+  mutate(height_23 = Height_2023 %>% as.numeric) %>%
+  mutate(type = case_when(
+    Shade == 1 ~ "Shade",
+    Ornamental == 1 ~ "Ornamental",
+    Evergreen == 1 ~ "Evergreen")) %>%
+  select(SPECIES, width_23, DBH_23, height_23,
+         Land_Use23, Site_Type2, Native, Non.native, type)
+
+treeee <- treestats %>%
+  group_by(SPECIES) %>%
+  summarise_at(vars(width_23, height_23, DBH_23), list(median = median), na.rm = T)
+  
+
+```
+
+albsolute height box plots
+```{r}
+ggplot(treestats %>% filter(height_23 != 0)) +
+  geom_boxplot(aes( x = reorder(Site_Type2, -height_23), 
+                    y = height_23)) +
+  theme_bw() +
+  xlab("Site Type") +
+  ylab("Height (ft)") +
+  ggtitle("Height by Site Type") +
+  theme(legend.position="none")
+
+ggplot(treestats %>% filter(height_23 != 0)) +
+  geom_boxplot(aes( x = reorder(Land_Use23, -height_23), 
+                    y = height_23)) +
+  theme_bw() +
+  xlab("Land Use Type") +
+  ylab("Height (ft)") +
+  ggtitle("Height by Land Use") +
+  theme(legend.position="none")
+
+ggplot(treestats %>% filter(height_23 != 0)) +
+  geom_boxplot(aes( x = reorder(Native, -height_23), 
+                    y = height_23)) +
+  theme_bw() +
+  xlab("Native") +
+  ylab("Height (ft)") +
+  ggtitle("Height by Native/ Non Native Species") +
+  theme(legend.position="none")
+
+ggplot(treestats %>% filter(height_23 != 0)) +
+  geom_boxplot(aes( x = reorder(type, -height_23), 
+                    y = height_23)) +
+  theme_bw() +
+  xlab("Type") +
+  ylab("Height (ft)") +
+  ggtitle("Height by Tree Type") +
+  theme(legend.position="none")
+
+ggplot(treestats %>% filter(height_23 != 0)) +
+  geom_boxplot(aes( x = reorder(SPECIES, -height_23), 
+                    y = height_23)) +
+  theme_bw() +
+  xlab("Type") +
+  ylab("Height (ft)") +
+  ggtitle("Height by Tree Type") +
+  theme(legend.position="none") +
+   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+```
+
+random street tree thing
+```{r}
+streettrees <- alltreedata %>%
+  filter(Mortality_ == "Alive") %>%
+  group_by(Species) %>%
+  summarise_at(vars(Width_2023, Height_202, DBH1_2023), list(median = median), na.rm = T)
+
+
+sitetype <- alltreedata %>%
+   summarise_at(vars(SiteType), list(count = count), na.rm = T)
+```
+
+
+
+
